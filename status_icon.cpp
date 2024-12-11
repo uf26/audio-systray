@@ -2,7 +2,7 @@
 #include "handle_events.h"
 
 XAppStatusIcon* create_status_icon() {
-    XAppStatusIcon* status_icon = xapp_status_icon_new_with_name("my-app");
+    XAppStatusIcon* status_icon = xapp_status_icon_new_with_name("audio_systray");
     setup_events(status_icon);
 
     return status_icon;

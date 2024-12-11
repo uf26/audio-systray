@@ -6,6 +6,9 @@ project(audio_systray VERSION 1.0 LANGUAGES CXX)
 # Enable generation of compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Set the build type to Debug (this enables debug symbols by default)
+set(CMAKE_BUILD_TYPE Debug)
+
 # Find GTK3 package using pkg-config
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
@@ -34,3 +37,9 @@ target_compile_options(audio_systray PRIVATE ${GTK3_CFLAGS_OTHER})
 
 # Enable C++11 or later, if desired
 target_compile_features(audio_systray PRIVATE cxx_std_11)  # Enable C++11 features (or change to cxx_std_14 for C++14, etc.)
+
+# Add debug-specific compile flags (optional, CMake will usually do this when build type is Debug)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(audio_systray PRIVATE -g)  # Add the -g flag for debug symbols
+endif()
+
