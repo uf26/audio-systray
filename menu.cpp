@@ -1,6 +1,6 @@
 #include "menu.h"
 #include "handle_events.h"
-#include "volume.h"
+#include "pulse_audio_actions.h"
 
 GtkMenu* createMenu() {
     GtkWidget* menu_widget = gtk_menu_new();
@@ -10,6 +10,8 @@ GtkMenu* createMenu() {
 
     GtkWidget* quit_item = gtk_menu_item_new_with_label("Quit");
     g_signal_connect(quit_item, "activate", G_CALLBACK(handle_quit), NULL);
+
+    pa_print_sinks();
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_widget), pavucontrol_item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu_widget), quit_item);

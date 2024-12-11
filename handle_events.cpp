@@ -1,8 +1,10 @@
 #include "handle_events.h"
 #include "menu.h"
+#include "pulse_audio.h"
 
 void handle_quit(GtkMenuItem *item, gpointer user_data) {
     gtk_main_quit();
+    pa_quit();
 }
 
 void handle_scroll(XAppStatusIcon* icon, int amount,
