@@ -2,6 +2,7 @@
 #include "menu.h"
 #include "pulse_audio_actions.h"
 #include "pulse_audio.h"
+#include "notify.h"
 
 #define SCROLL_AMOUNT 5
 
@@ -9,12 +10,14 @@ void handle_quit(GtkMenuItem *item, gpointer user_data) {
     destroy_menu();
     gtk_main_quit();
     pa_quit();
+    notify_close();
 }
 
 void handle_scroll(XAppStatusIcon* icon, int amount,
         XAppScrollDirection direction, guint time,
         gpointer user_data) {
-    pa_set_volume(-amount * SCROLL_AMOUNT);
+    pa_change_volume(-amount * SCROLL_AMOUNT);
+    notify_send_volume();
 }
 
 void handle_button_release(XAppStatusIcon* icon, int x, int y,
@@ -22,9 +25,11 @@ void handle_button_release(XAppStatusIcon* icon, int x, int y,
     switch(button) {
         case 1:
             pa_cycle_sink();
+            notify_send_cycle_sink();
             break;
         case 2:
             pa_toggle_mute();
+            notify_send_volume();
             break;
         case 3:
             pop_menu(icon, x, y, button, time, panel_position, user_data);

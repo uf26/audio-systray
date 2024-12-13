@@ -16,7 +16,7 @@ void destroy_menu() {
         
         pa_info_list* sink = (pa_info_list*) g_object_get_data(G_OBJECT(child), "sink");
         if (sink != NULL)
-            delete sink;
+            free(sink);
     }
 
     gtk_widget_destroy(widget);
@@ -29,7 +29,7 @@ GtkMenu* create_menu() {
     GtkRadioMenuItem* radio_group = NULL;
     for (pa_info_list* sink = sinks; sink != NULL; sink = sink->next) {
         GtkWidget* sink_item = gtk_radio_menu_item_new_with_label_from_widget(radio_group, 
-                sink->name.c_str());
+                sink->name);
         radio_group = GTK_RADIO_MENU_ITEM(sink_item);
 
         if (sink->is_default)
