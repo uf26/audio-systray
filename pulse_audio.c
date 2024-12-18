@@ -1,4 +1,6 @@
 #include "pulse_audio.h"
+#include "glib.h"
+#include "status_icon.h"
 #include <stdlib.h>
 
 static pa_mainloop *mainloop = NULL;
@@ -29,8 +31,9 @@ void pa_state_cb(pa_context* c, void* userdata) {
     pa_state = pa_context_get_state(c);
 }
 
-void pa_step() {
+gboolean pa_step() {
     pa_mainloop_iterate(mainloop, 0, NULL);
+    return TRUE;
 }
 
 void pa_wait_for_ready() {
@@ -48,4 +51,22 @@ void pa_wait_for_operation(pa_operation* op) {
 
 pa_context* pa_get_context() {
     return context;
+}
+
+void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t, 
+        uint32_t idx, void *userdata) {
+    if (t & PA_SUBSCRIPTION_EVENT_CHANGE) {
+        g_idle_add((GSourceFunc)update_icon, NULL);
+    }
+}
+
+void pa_subscribe_to_sink_changes(gpointer app) {
+    pa_wait_for_ready();
+    pa_context* context = pa_get_context();
+
+    pa_context_set_subscribe_callback(context, pa_subscribe_cb, NULL);
+    pa_operation* pa_op = pa_context_subscribe(context, PA_SUBSCRIPTION_MASK_SINK, NULL, NULL);
+    pa_wait_for_operation(pa_op);
+
+    g_timeout_add(20, (GSourceFunc)pa_step, app);
 }

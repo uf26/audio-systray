@@ -9,8 +9,7 @@ int main(int argc, char** argv) {
     gtk_init(&argc, &argv);
     pa_init();
     notify_setup();
-
-    XAppStatusIcon* status_icon = create_status_icon();
+    status_icon_setup();
 
     gtk_main();
 

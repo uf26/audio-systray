@@ -192,4 +192,3 @@ void pa_get_icon_name(char* icon_name) {
     else
         strcpy(icon_name, "audio-volume-high-symbolic");
 }
-

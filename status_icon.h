@@ -4,8 +4,9 @@
 #include <gtk/gtk.h>
 #include <xapp-status-icon.h>
 
-XAppStatusIcon* create_status_icon();
+void update_icon();
+void status_icon_setup();
 
-void setup_events(XAppStatusIcon* status_icon);
+void setup_events();
 
 #endif
