@@ -7,10 +7,9 @@
 
 int main(int argc, char** argv) {
     gtk_init(&argc, &argv);
-
-    status_icon_setup();
     pa_init();
     notify_setup();
+    status_icon_setup();
 
     gtk_main();
 

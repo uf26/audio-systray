@@ -30,7 +30,6 @@ target_link_libraries(audio_systray PRIVATE
     ${GTK3_LIBRARIES}
     /usr/lib/libxapp.so      # Manually specify the XApp library
     pulse                     # Link with libpulse (PulseAudio)
-    pulse-mainloop-glib
     m
     notify
 )

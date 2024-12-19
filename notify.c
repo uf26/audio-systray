@@ -1,4 +1,5 @@
 #include "notify.h"
+#include "pulse_audio_actions.h"
 
 static NotifyNotification* volume_notification;
 static NotifyNotification* sink_notification;
@@ -14,30 +15,42 @@ void notify_setup() {
 
 void notify_send(NotifyNotification* notification,
         const char* message1, const char* message2, 
-        const char* icon, int progress, int timeout) {
+        const char* icon, int progress, int replace_id, int timeout) {
     notify_notification_update(notification, message1, message2, icon);
 
     if (progress != -1)
         notify_notification_set_hint_int32(notification, 
                 "value", progress);
 
+    if (replace_id != -1)
+        ;
+
     notify_notification_show(notification, NULL);
 }
 
-void notify_send_volume(int volume, bool mute) {
-    char message[] = "Volume: 100%% [muted]";
-    sprintf(message, "Volume: %d%% %s", volume, mute ? "[muted]" : "");
+void notify_send_volume() {
+    string icon_name;
+    pa_get_icon_name(icon_name);
 
-    char icon[50];
-    notify_get_icon(icon, volume, mute);
+    int volume;
+    bool mute;
+    pa_get_volume(&volume, &mute);
 
-    notify_send(volume_notification,
-            message, "", icon, volume, 1000);
+    char volume_str[] = "Volume: 100% [muted]";
+    sprintf(volume_str, "Volume: %d%%%s", volume, mute ? " [muted]" : "");
+    notify_send(volume_notification, volume_str, "", icon_name, 
+            volume, volume, -1);
 }
 
-void notify_send_cycle_sink(char* name) {
-    notify_send(sink_notification, "New default sink:", 
-            name, "audio-card", -1, 2000);
+void notify_send_cycle_sink() {
+    pa_cycle_sink();
+
+    string default_sink_id;
+    pa_get_default_sink_id(default_sink_id);
+    pa_sink_info default_sink = pa_get_sink_info();
+
+    notify_send(sink_notification, "New Sink:", default_sink.description, 
+            "audio-card", -1, -1, -1);
 }
 
 void notify_close() {
@@ -45,19 +58,5 @@ void notify_close() {
     g_object_unref(G_OBJECT(sink_notification));
 
     notify_uninit();
-}
-
-void notify_get_icon(char* icon, int volume, bool muted) {
-    if (muted) {
-        strcpy(icon, "audio-volume-muted-symbolic");
-    } else if (volume == 0) {
-        strcpy(icon, "audio-volume-muted-symbolic");
-    } else if (volume < 33) {
-        strcpy(icon, "audio-volume-low-symbolic");
-    } else if (volume < 66) {
-        strcpy(icon, "audio-volume-medium-symbolic");
-    } else {
-        strcpy(icon, "audio-volume-high-symbolic");
-    }
 }
 
