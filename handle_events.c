@@ -4,8 +4,6 @@
 #include "pulse_audio.h"
 #include "notify.h"
 
-#define SCROLL_AMOUNT 5
-
 void handle_quit(GtkMenuItem *item, gpointer user_data) {
     destroy_menu();
     gtk_main_quit();

@@ -32,6 +32,7 @@ target_link_libraries(audio_systray PRIVATE
     pulse                     # Link with libpulse (PulseAudio)
     m
     notify
+    X11
 )
 
 # Set compile flags for GTK3 and C
