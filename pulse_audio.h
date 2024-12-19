@@ -17,6 +17,7 @@ pa_context* pa_get_context();
 static void pa_subscribe_cb(pa_context *c, 
         pa_subscription_event_type_t t, 
         uint32_t idx, void *userdata);
-void pa_subscribe_to_sink_changes(gpointer app);
+static void pa_subscribe_to_sink_changes();
+void pa_start_subscribe_thread();
 
 #endif

@@ -2,11 +2,13 @@
 #include "glib.h"
 #include "status_icon.h"
 #include <stdlib.h>
+#include <threads.h>
+#include <pthread.h>
 
-static pa_mainloop *mainloop = NULL;
-static pa_context *context = NULL;
-static pa_mainloop_api *mainloop_api = NULL;
-static pa_context_state_t pa_state = PA_CONTEXT_CONNECTING;
+static thread_local pa_mainloop *mainloop = NULL;
+static thread_local pa_context *context = NULL;
+static thread_local pa_mainloop_api *mainloop_api = NULL;
+static thread_local pa_context_state_t pa_state = PA_CONTEXT_CONNECTING;
 
 void pa_init() {
     mainloop = pa_mainloop_new();
@@ -60,7 +62,9 @@ void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
     }
 }
 
-void pa_subscribe_to_sink_changes(gpointer app) {
+void pa_subscribe_to_sink_changes() {
+    pa_init();
+
     pa_wait_for_ready();
     pa_context* context = pa_get_context();
 
@@ -68,5 +72,11 @@ void pa_subscribe_to_sink_changes(gpointer app) {
     pa_operation* pa_op = pa_context_subscribe(context, PA_SUBSCRIPTION_MASK_SINK, NULL, NULL);
     pa_wait_for_operation(pa_op);
 
-    g_timeout_add(20, (GSourceFunc)pa_step, app);
+    pa_run();
+}
+
+void pa_start_subscribe_thread() {
+    pthread_t thread;
+    pthread_create(&thread, NULL, 
+            (void*(*)(void*))pa_subscribe_to_sink_changes, NULL);
 }

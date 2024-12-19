@@ -26,6 +26,6 @@ void setup_events() {
     g_signal_connect(status_icon, "scroll-event",
             G_CALLBACK(handle_scroll), NULL);
 
-    pa_subscribe_to_sink_changes(status_icon);
+    pa_start_subscribe_thread();
 }
 
