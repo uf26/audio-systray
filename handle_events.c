@@ -14,8 +14,7 @@ void handle_quit(GtkMenuItem *item, gpointer user_data) {
 void handle_scroll(XAppStatusIcon* icon, int amount,
         XAppScrollDirection direction, guint time,
         gpointer user_data) {
-    pa_change_volume(-amount * SCROLL_AMOUNT);
-    notify_send_volume();
+    pa_change_volume_default_sink(-amount * SCROLL_AMOUNT);
 }
 
 void handle_button_release(XAppStatusIcon* icon, int x, int y,
@@ -23,11 +22,9 @@ void handle_button_release(XAppStatusIcon* icon, int x, int y,
     switch(button) {
         case 1:
             pa_cycle_sink();
-            notify_send_cycle_sink();
             break;
         case 2:
-            pa_toggle_mute();
-            notify_send_volume();
+            pa_toggle_mute_default_sink();
             break;
         case 3:
             pop_menu(icon, x, y, button, time, panel_position, user_data);
@@ -39,7 +36,7 @@ void handle_sink_select(GtkRadioMenuItem *item, gpointer user_data) {
     if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(item)))
         return;
 
-    pa_info_list* sinks = (pa_info_list*) user_data;
-    pa_set_default_sink(sinks);
+    pa_info_list* sink = (pa_info_list*)user_data;
+    pa_new_default_sink(sink, false);
 }
 

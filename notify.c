@@ -1,5 +1,4 @@
 #include "notify.h"
-#include "pulse_audio_actions.h"
 
 static NotifyNotification* volume_notification;
 static NotifyNotification* sink_notification;
@@ -22,19 +21,14 @@ void notify_send(NotifyNotification* notification,
         notify_notification_set_hint_int32(notification, 
                 "value", progress);
 
-    if (replace_id != -1)
-        ;
-
     notify_notification_show(notification, NULL);
 }
 
-void notify_send_volume() {
+void notify_sink_change(pa_info_list* sink) {
+    bool mute = sink->mute;
+    int volume = pa_cvolume_to_int(&sink->volume);
     string icon_name;
     pa_get_icon_name(icon_name);
-
-    int volume;
-    bool mute;
-    pa_get_volume(&volume, &mute);
 
     char volume_str[] = "Volume: 100% [muted]";
     sprintf(volume_str, "Volume: %d%%%s", volume, mute ? " [muted]" : "");
@@ -42,14 +36,8 @@ void notify_send_volume() {
             volume, volume, -1);
 }
 
-void notify_send_cycle_sink() {
-    pa_cycle_sink();
-
-    string default_sink_id;
-    pa_get_default_sink_id(default_sink_id);
-    pa_sink_info default_sink = pa_get_sink_info();
-
-    notify_send(sink_notification, "New Sink:", default_sink.description, 
+void notify_new_dafault_sink(pa_info_list* sink) {
+    notify_send(sink_notification, "New Sink:", sink->name, 
             "audio-card", -1, -1, -1);
 }
 

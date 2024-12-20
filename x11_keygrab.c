@@ -23,18 +23,12 @@ GdkFilterReturn x11_event_filter(GdkXEvent* xevent,
         KeySym keysym = XLookupKeysym(&xev->xkey, 0);
         switch (keysym) {
             case XF86XK_AudioRaiseVolume:
-                pa_change_volume(SCROLL_AMOUNT);
-                notify_send_volume();
                 break;
 
             case XF86XK_AudioLowerVolume:
-                pa_change_volume(-SCROLL_AMOUNT);
-                notify_send_volume();
                 break;
 
             case XF86XK_AudioMute:
-                pa_toggle_mute();
-                notify_send_volume();
                 break;
 
             default:

@@ -9,16 +9,6 @@ void destroy_menu() {
         return;
 
     GtkWidget* widget = GTK_WIDGET(menu);
-
-    GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
-    for (GList* iter = children; iter != NULL; iter = g_list_next(iter)) {
-        GtkWidget* child = GTK_WIDGET(iter->data);
-        
-        pa_info_list* sink = (pa_info_list*) g_object_get_data(G_OBJECT(child), "sink");
-        if (sink != NULL)
-            free(sink);
-    }
-
     gtk_widget_destroy(widget);
 }
 

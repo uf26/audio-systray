@@ -2,7 +2,6 @@
 #include "handle_events.h"
 
 #include "pulse_audio_actions.h"
-#include "pulse_audio.h"
 #include <pulse/subscribe.h>
 
 XAppStatusIcon* status_icon;
@@ -16,8 +15,6 @@ void update_icon() {
 void status_icon_setup() {
     status_icon = xapp_status_icon_new_with_name("audio_systray");
     setup_events();
-
-    update_icon();
 }
 
 void setup_events() {
@@ -25,7 +22,5 @@ void setup_events() {
             G_CALLBACK(handle_button_release), NULL);
     g_signal_connect(status_icon, "scroll-event",
             G_CALLBACK(handle_scroll), NULL);
-
-    pa_start_subscribe_thread();
 }
 
