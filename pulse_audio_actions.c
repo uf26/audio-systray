@@ -43,12 +43,23 @@ void pa_free_sinks() {
     sinks = NULL;
 }
 
+pa_info_list* pa_get_sink_by_id(const char* id) {
+    for (pa_info_list* sink = sinks; sink != NULL; sink = sink->next) {
+        if (strcmp(sink->id, id) == 0)
+            return sink;
+    }
+    return NULL;
+}
+
 void pa_update_sinks_sinklist_cb(pa_context *c, const pa_sink_info *l, 
         int eol, void *userdata) {
     if (l == NULL || eol) {
         update_icon();
         return;
     }
+
+    if (pa_get_sink_by_id(l->name) != NULL)
+        return;
 
     pa_info_list* new_sink = pa_new_info_list(l->description, l->name,
             strcmp(l->name, userdata) == 0, l->volume, l->mute);
@@ -68,6 +79,7 @@ void pa_update_sinks_get_default_sink_cb(pa_context *c,
 
 void pa_update_sinks() {
     pa_free_sinks();
+    sinks = NULL;
 
     pa_operation* op = pa_context_get_server_info(pa_get_context(),
             pa_update_sinks_get_default_sink_cb, NULL);
@@ -95,8 +107,10 @@ void pa_toggle_mute_default_sink() {
     if (default_sink == NULL)
         return;
 
+    default_sink->mute = !default_sink->mute;
+
     pa_operation* op = pa_context_set_sink_mute_by_name(pa_get_context(),
-            default_sink->name, !default_sink->mute, 
+            default_sink->id, default_sink->mute, 
             pa_sink_change_cb, default_sink);
     pa_operation_unref(op);
 }
@@ -122,17 +136,22 @@ void pa_change_volume_default_sink(int delta) {
 
     pa_change_pa_cvolume(&default_sink->volume, delta);
 
-    pa_operation* op = pa_context_set_sink_volume_by_name(
+    pa_operation* op_mute = pa_context_set_sink_mute_by_name(
+            pa_get_context(), default_sink->id, 
+            false, NULL, NULL);
+    pa_operation_unref(op_mute);
+
+    pa_operation* op_vol = pa_context_set_sink_volume_by_name(
             pa_get_context(), default_sink->id, 
             &default_sink->volume, pa_sink_change_cb, default_sink);
-    pa_operation_unref(op);
+    pa_operation_unref(op_vol);
 }
 
 void pa_new_default_sink_cb(pa_context *c, int success, void *userdata) {
     pa_info_list* new_default = (pa_info_list*) userdata;
 
     if (success && new_default)
-        notify_new_dafault_sink(new_default);
+        notify_new_default_sink(new_default);
 }
 
 void pa_new_default_sink(pa_info_list* new_default,
@@ -151,6 +170,9 @@ void pa_new_default_sink(pa_info_list* new_default,
 
 void pa_cycle_sink() {
     pa_info_list* it = sinks;
+
+    if (it == NULL)
+        return;
 
     while (!it->is_default) {
         it = it->next;
@@ -185,4 +207,17 @@ void pa_get_icon_name(string icon) {
     } else {
         strcpy(icon, "audio-volume-high-symbolic");
     }
+}
+
+void pa_volume_text(char* text) {
+    pa_info_list* default_sink = pa_get_default_sink();
+    if (default_sink == NULL) {
+        strcpy(text, "N/A");
+        return; 
+    }
+
+    int volume = pa_cvolume_to_int(&default_sink->volume);
+    bool mute = default_sink->mute;
+
+    sprintf(text, "%d%%%s", volume, mute ? " [muted]" : "");
 }

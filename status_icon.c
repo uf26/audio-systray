@@ -10,6 +10,10 @@ void update_icon() {
     string icon_name;
     pa_get_icon_name(icon_name);
     xapp_status_icon_set_icon_name(status_icon, icon_name);
+
+    string volume_text;
+    pa_volume_text(volume_text);
+    xapp_status_icon_set_tooltip_text(status_icon, volume_text);
 }
 
 void status_icon_setup() {

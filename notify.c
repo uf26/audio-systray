@@ -30,13 +30,13 @@ void notify_sink_change(pa_info_list* sink) {
     string icon_name;
     pa_get_icon_name(icon_name);
 
-    char volume_str[] = "Volume: 100% [muted]";
-    sprintf(volume_str, "Volume: %d%%%s", volume, mute ? " [muted]" : "");
+    string volume_str = "Volume: ";
+    pa_volume_text(volume_str + strlen(volume_str));
     notify_send(volume_notification, volume_str, "", icon_name, 
             volume, volume, -1);
 }
 
-void notify_new_dafault_sink(pa_info_list* sink) {
+void notify_new_default_sink(pa_info_list* sink) {
     notify_send(sink_notification, "New Sink:", sink->name, 
             "audio-card", -1, -1, -1);
 }
