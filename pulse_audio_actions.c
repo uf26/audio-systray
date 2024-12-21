@@ -145,6 +145,7 @@ void pa_change_volume_default_sink(int delta) {
         return;
 
     pa_change_pa_cvolume(&default_sink->volume, delta);
+    default_sink->mute = false;
 
     pa_operation* op = pa_context_set_sink_mute_by_name(
             pa_get_context(), default_sink->id, 
