@@ -49,6 +49,9 @@ void pa_toggle_mute_default_sink();
 int pa_cvolume_to_int(pa_cvolume* volume);
 static void pa_change_pa_cvolume(pa_cvolume* volume, int delta);
 
+
+static void pa_change_volume_unmute_cb(pa_context *c, 
+        int success, void *userdata);
 void pa_change_volume_default_sink(int delta);
 void pa_new_default_sink(pa_info_list* sink, bool notify);
 

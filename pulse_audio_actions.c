@@ -129,6 +129,16 @@ void pa_change_pa_cvolume(pa_cvolume* volume, int delta) {
     pa_cvolume_set(volume, volume->channels, new_volume);
 }
 
+void pa_change_volume_unmute_cb(pa_context *c, 
+        int success, void *userdata) {
+    pa_info_list* sink = (pa_info_list*) userdata;
+
+    pa_operation* op = pa_context_set_sink_volume_by_name(
+            pa_get_context(), sink->id, 
+            &sink->volume, pa_sink_change_cb, sink);
+    pa_operation_unref(op);
+}
+
 void pa_change_volume_default_sink(int delta) {
     pa_info_list* default_sink = pa_get_default_sink();
     if (default_sink == NULL)
@@ -136,15 +146,11 @@ void pa_change_volume_default_sink(int delta) {
 
     pa_change_pa_cvolume(&default_sink->volume, delta);
 
-    pa_operation* op_mute = pa_context_set_sink_mute_by_name(
+    pa_operation* op = pa_context_set_sink_mute_by_name(
             pa_get_context(), default_sink->id, 
-            false, NULL, NULL);
-    pa_operation_unref(op_mute);
+            false, pa_change_volume_unmute_cb, default_sink);
+    pa_operation_unref(op);
 
-    pa_operation* op_vol = pa_context_set_sink_volume_by_name(
-            pa_get_context(), default_sink->id, 
-            &default_sink->volume, pa_sink_change_cb, default_sink);
-    pa_operation_unref(op_vol);
 }
 
 void pa_new_default_sink_cb(pa_context *c, int success, void *userdata) {
