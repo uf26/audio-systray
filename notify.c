@@ -14,12 +14,15 @@ void notify_setup() {
 
 void notify_send(NotifyNotification* notification,
         const char* message1, const char* message2, 
-        const char* icon, int progress, int replace_id, int timeout) {
+        const char* icon, int progress, int timeout) {
     notify_notification_update(notification, message1, message2, icon);
 
     if (progress != -1)
         notify_notification_set_hint_int32(notification, 
                 "value", progress);
+
+    if (timeout != -1)
+        notify_notification_set_timeout(notification, timeout);
 
     notify_notification_show(notification, NULL);
 }
@@ -33,12 +36,12 @@ void notify_sink_change(pa_info_list* sink) {
     string volume_str = "Volume: ";
     pa_volume_text(volume_str + strlen(volume_str));
     notify_send(volume_notification, volume_str, "", icon_name, 
-            volume, volume, -1);
+            volume, 1000);
 }
 
 void notify_new_default_sink(pa_info_list* sink) {
     notify_send(sink_notification, "New Sink:", sink->name, 
-            "audio-card", -1, -1, -1);
+            "audio-card", -1, 2000);
 }
 
 void notify_close() {
