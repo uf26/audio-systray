@@ -2,21 +2,23 @@
 
 static NotifyNotification* volume_notification;
 static NotifyNotification* sink_notification;
+static NotifyNotification* playerctl_notification;
 
 void notify_setup() {
-    if (!notify_init("Audio Tray")) {
+    if (!notify_init("notify")) {
         g_error("Failed to initialize libnotify");
     }
 
     volume_notification = notify_notification_new("Volume", "", NULL);
     sink_notification = notify_notification_new("Sink", "", NULL);
+    playerctl_notification = notify_notification_new(
+            "Playerctl", "", NULL);
 }
 
 void notify_send(NotifyNotification* notification,
         const char* message1, const char* message2, 
         const char* icon, int progress, int timeout) {
     notify_notification_update(notification, message1, message2, icon);
-
     if (progress != -1)
         notify_notification_set_hint_int32(notification, 
                 "value", progress);
@@ -40,7 +42,7 @@ void notify_sink_change(pa_info_list* sink) {
 }
 
 void notify_new_default_sink(pa_info_list* sink) {
-    notify_send(sink_notification, "New Sink:", sink->name, 
+    notify_send(sink_notification, "New Sink", sink->name, 
             "audio-card", -1, 2000);
 }
 
@@ -51,3 +53,14 @@ void notify_close() {
     notify_uninit();
 }
 
+void notify_playerctl_change(const char* title, const char* artist,
+        const char* icon, bool playing) {
+    string message1;
+    sprintf(message1, "%s", playing ? "Playing" : "Paused");
+
+    string message2;
+    sprintf(message2, "%s - %s", title, artist);
+
+    notify_send(playerctl_notification, message1, message2,
+            icon, -1, 2000);
+}

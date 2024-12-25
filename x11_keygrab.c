@@ -1,18 +1,22 @@
 #include "x11_keygrab.h"
 #include "pulse_audio_actions.h"
-#include "notify.h"
+#include "playerctl.h"
 
 #include <gdk/gdkx.h>
 #include <X11/Xlib.h>
 #include <X11/XF86keysym.h>
 
-#define NUM_KEYS_TO_GRAB 4
+#define NUM_KEYS_TO_GRAB 7
 
 static const char *keysym_names[NUM_KEYS_TO_GRAB] = {
     "XF86AudioRaiseVolume",
     "XF86AudioLowerVolume",
     "XF86AudioMute",
-    "XF86AudioMicMute"
+    "XF86AudioMicMute",
+
+    "XF86AudioPlay",
+    "XF86AudioNext",
+    "XF86AudioPrev"
 };
 
 GdkFilterReturn x11_event_filter(GdkXEvent* xevent, 
@@ -32,6 +36,18 @@ GdkFilterReturn x11_event_filter(GdkXEvent* xevent,
 
             case XF86XK_AudioMute:
                 pa_toggle_mute_default_sink();
+                break;
+
+            case XF86XK_AudioPlay:
+                playerctl_play_pause();
+                break;
+
+            case XF86XK_AudioNext:
+                playerctl_next();
+                break;
+
+            case XF86XK_AudioPrev:
+                playerctl_previous();
                 break;
 
             default:
