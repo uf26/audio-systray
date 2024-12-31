@@ -2,7 +2,6 @@
 
 static NotifyNotification* volume_notification;
 static NotifyNotification* sink_notification;
-static NotifyNotification* playerctl_notification;
 
 void notify_setup() {
     if (!notify_init("notify")) {
@@ -11,8 +10,6 @@ void notify_setup() {
 
     volume_notification = notify_notification_new("Volume", "", NULL);
     sink_notification = notify_notification_new("Sink", "", NULL);
-    playerctl_notification = notify_notification_new(
-            "Playerctl", "", NULL);
 }
 
 void notify_send(NotifyNotification* notification,
@@ -51,16 +48,4 @@ void notify_close() {
     g_object_unref(G_OBJECT(sink_notification));
 
     notify_uninit();
-}
-
-void notify_playerctl_change(const char* title, const char* artist,
-        const char* icon, bool playing) {
-    string message1;
-    sprintf(message1, "%s", playing ? "Playing" : "Paused");
-
-    string message2;
-    sprintf(message2, "%s - %s", title, artist);
-
-    notify_send(playerctl_notification, message1, message2,
-            icon, -1, 2000);
 }

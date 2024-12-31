@@ -11,9 +11,6 @@ static void notify_send(NotifyNotification* notification,
 void notify_sink_change(pa_info_list* sink);
 void notify_new_default_sink(pa_info_list* sink);
 
-void notify_playerctl_change(const char* title, const char* artist,
-        const char* icon, bool playing);
-
 void notify_close();
 
 #endif
