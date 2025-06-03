@@ -1,21 +1,22 @@
 #include "notify.h"
 
-static NotifyNotification* volume_notification;
-static NotifyNotification* sink_notification;
+static NotifyNotification* volume_notification = NULL;
+static NotifyNotification* sink_notification = NULL;
 
 void notify_setup() {
     if (!notify_init("notify")) {
         g_error("Failed to initialize libnotify");
     }
-
-    volume_notification = notify_notification_new("Volume", "", NULL);
-    sink_notification = notify_notification_new("Sink", "", NULL);
 }
 
 void notify_send(NotifyNotification* notification,
         const char* message1, const char* message2, 
         const char* icon, int progress, int timeout) {
-    notify_notification_update(notification, message1, message2, icon);
+    if (!notification)
+        notification = notify_notification_new(message1, message2, icon);
+    else
+        notify_notification_update(notification, message1, message2, icon);
+
     if (progress != -1)
         notify_notification_set_hint_int32(notification, 
                 "value", progress);
@@ -44,8 +45,14 @@ void notify_new_default_sink(pa_info_list* sink) {
 }
 
 void notify_close() {
-    g_object_unref(G_OBJECT(volume_notification));
-    g_object_unref(G_OBJECT(sink_notification));
+    if (volume_notification) {
+        g_object_unref(G_OBJECT(volume_notification));
+        volume_notification = NULL;
+    }
+    if (sink_notification) {
+        g_object_unref(G_OBJECT(sink_notification));
+        sink_notification = NULL;
+    }
 
     notify_uninit();
 }
