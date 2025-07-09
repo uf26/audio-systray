@@ -2,7 +2,7 @@
 #define MENU_H
 
 #include <gtk/gtk.h>
-#include <xapp-status-icon.h>
+#include <xapp/libxapp/xapp-status-icon.h>
 
 void destroy_menu();
 GtkMenu* create_menu();

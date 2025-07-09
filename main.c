@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include <xapp-status-icon.h>
+#include <xapp/libxapp/xapp-status-icon.h>
 
 #include "status_icon.h"
 #include "pulse_audio.h"

@@ -2,7 +2,7 @@
 #define HANDLE_EVENTS_H
 
 #include <gtk/gtk.h>
-#include <xapp-status-icon.h>
+#include <xapp/libxapp/xapp-status-icon.h>
 
 void handle_quit(GtkMenuItem *item, gpointer user_data);
 void handle_scroll(XAppStatusIcon* icon, int amount,
