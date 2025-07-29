@@ -7,7 +7,7 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      nixosLib = pkgs.lib.nixos;
+      nixosLib = import "${nixpkgs}/nixos/lib";
       mkOption = nixosLib.mkOption;
       types = nixosLib.types;
       mkIf = nixosLib.mkIf;
