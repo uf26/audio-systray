@@ -1,28 +1,35 @@
 {
-  description = "Development environment for audio systray";
-
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs, ... }: {
-    devShells.x86_64-linux.default =
-      let
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      in
-      pkgs.mkShell { 
+  outputs = { self, nixpkgs, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      packages.${system}.default = pkgs.stdenv.mkDerivation {
+        pname = "audio-systray";
+        version = "1.0";
+
+        src = ./.;
+
         buildInputs = with pkgs; [
           cmake
-          gnumake
-          gcc
           pkg-config
-
           gtk3
           xapp.dev
           pulseaudio
           libnotify
           xorg.libX11
         ];
+
+        installPhase = ''
+          make
+          mkdir -p $out/bin
+          cp audio_systray $out/bin/
+        '';
       };
-  };
+    };
 }
+

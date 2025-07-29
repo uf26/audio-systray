@@ -1,21 +1,17 @@
 #include "notify.h"
 
-static NotifyNotification* volume_notification = NULL;
-static NotifyNotification* sink_notification = NULL;
-
 void notify_setup() {
     if (!notify_init("notify")) {
         g_error("Failed to initialize libnotify");
     }
 }
 
-void notify_send(NotifyNotification* notification,
+void notify_send(char* type,
         const char* message1, const char* message2, 
         const char* icon, int progress, int timeout) {
-    if (!notification)
-        notification = notify_notification_new(message1, message2, icon);
-    else
-        notify_notification_update(notification, message1, message2, icon);
+    NotifyNotification* notification = notify_notification_new(message1, message2, icon);
+
+    notify_notification_set_hint_string(notification, "x-canonical-private-synchronous", type);
 
     if (progress != -1)
         notify_notification_set_hint_int32(notification, 
@@ -25,6 +21,8 @@ void notify_send(NotifyNotification* notification,
         notify_notification_set_timeout(notification, timeout);
 
     notify_notification_show(notification, NULL);
+
+    g_object_unref(G_OBJECT(notification));
 }
 
 void notify_sink_change(pa_info_list* sink) {
@@ -35,24 +33,15 @@ void notify_sink_change(pa_info_list* sink) {
 
     string volume_str = "Volume: ";
     pa_volume_text(volume_str + strlen(volume_str));
-    notify_send(volume_notification, volume_str, "", icon_name, 
+    notify_send("sink change", volume_str, "", icon_name, 
             volume, 1000);
 }
 
 void notify_new_default_sink(pa_info_list* sink) {
-    notify_send(sink_notification, "New Sink", sink->name, 
+    notify_send("new default sink", "New Sink", sink->name, 
             "audio-card", -1, 2000);
 }
 
 void notify_close() {
-    if (volume_notification) {
-        g_object_unref(G_OBJECT(volume_notification));
-        volume_notification = NULL;
-    }
-    if (sink_notification) {
-        g_object_unref(G_OBJECT(sink_notification));
-        sink_notification = NULL;
-    }
-
     notify_uninit();
 }

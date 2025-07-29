@@ -5,7 +5,7 @@
 #include "pulse_audio_actions.h"
 
 void notify_setup();
-static void notify_send(NotifyNotification* notification,
+static void notify_send(char* type,
         const char* message1, const char* message2, 
         const char* icon, int progress, int timeout);
 void notify_sink_change(pa_info_list* sink);
