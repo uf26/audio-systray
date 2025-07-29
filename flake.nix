@@ -8,7 +8,8 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
-      package = pkgs.stdenv.mkDerivation {
+      package = self.packages.${system}.default;
+      packages.${system}.default = pkgs.stdenv.mkDerivation {
         pname = "audio-systray";
         version = "1.0";
         src = ./.;
