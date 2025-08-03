@@ -28,8 +28,15 @@ pa_info_list* pa_new_info_list(const char* name,
 }
 
 void open_pavucontrol() {
-    if (fork() == 0) {
+    pid_t pid = fork();
+    if (pid == 0) {
         execlp("pavucontrol", "pavucontrol", NULL);
+        // If execlp fails
+        g_error("Failed to start pavucontrol: %s\n", g_strerror(errno));
+        exit(EXIT_FAILURE);
+    } else if (pid < 0) {
+        // Fork failed
+        g_error("Fork failed: %s\n", g_strerror(errno));
     }
 }
 
