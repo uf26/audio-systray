@@ -9,6 +9,7 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
     in {
+      package = self.packages.${system}.default;
       packages.${system}.default = pkgs.stdenv.mkDerivation {
         pname = "audio-systray";
         version = "1.0";
@@ -31,6 +32,11 @@
           };
 
           config = lib.mkIf config.services.audio-systray.enable {
+
+            assertions = [
+              (lib.hm.assertions.assertPlatform "services.audio-systray" pkgs lib.platforms.linux)
+            ];
+
             systemd.user.services.audio-systray = {
               Unit = {
                 Description = "audio systray";
@@ -47,8 +53,12 @@
               };
 
               Service = {
-                ExecStart = "${self.packages.${system}.default}/bin/audio-systray"; 
+                ExecStart = "${self.package}/bin/audio-systray"; 
                 Restart = "on-failure";
+
+                Environment = [
+                  "GDK_PIXBUF_MODULE_FILE=${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
+                ];
               };
             };
           };
