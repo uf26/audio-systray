@@ -12,6 +12,24 @@ void destroy_menu() {
     gtk_widget_destroy(widget);
 }
 
+void force_item_length(GtkMenuItem* item, int width) {
+    GtkWidget *label = gtk_bin_get_child(GTK_BIN(item));
+
+    char* text = (char*) gtk_label_get_text(GTK_LABEL(label));
+
+    gtk_widget_set_tooltip_text(label, text);
+
+    if (strlen(text) < width)
+        return;
+
+    text[width - 4] = '.';
+    text[width - 3] = '.';
+    text[width - 2] = '.';
+    text[width - 1] = '\0';
+
+    gtk_label_set_text(GTK_LABEL(label), text);
+}
+
 GtkMenu* create_menu() {
     GtkWidget* menu_widget = gtk_menu_new();
 
@@ -20,6 +38,8 @@ GtkMenu* create_menu() {
     for (pa_info_list* sink = sinks; sink != NULL; sink = sink->next) {
         GtkWidget* sink_item = gtk_radio_menu_item_new_with_label_from_widget(radio_group, 
                 sink->name);
+        force_item_length(GTK_MENU_ITEM(sink_item), 50);
+
         radio_group = GTK_RADIO_MENU_ITEM(sink_item);
 
         if (sink->is_default)
