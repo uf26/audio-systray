@@ -13,6 +13,17 @@
 static pa_glib_mainloop* mainloop = NULL;
 static pa_context *context = NULL;
 static pa_mainloop_api *mainloop_api = NULL;
+static size_t pa_restart_attempts = 0;
+
+void pa_restart() {
+    pa_context_disconnect(context);
+    pa_context_unref(context);
+    pa_free_sinks();
+
+    context = pa_context_new(mainloop_api, "audio_systray");
+    pa_context_connect(context, NULL, PA_CONTEXT_NOFLAGS, NULL);
+    pa_context_set_state_callback(context, pa_state_cb, NULL);
+}
 
 void pa_init() {
     mainloop = pa_glib_mainloop_new(NULL);
@@ -31,10 +42,27 @@ void pa_quit() {
 }
 
 void pa_state_cb(pa_context* c, void* userdata) {
-    if (pa_context_get_state(c) == PA_CONTEXT_READY) {
-        pa_update_sinks();
-        pa_subscribe_to_sink_changes();
-    }
+    switch (pa_context_get_state(c)) {
+        case PA_CONTEXT_READY:
+            pa_restart_attempts = 0;
+
+            pa_update_sinks();
+            pa_subscribe_to_sink_changes();
+            break;
+
+        case PA_CONTEXT_FAILED:
+        case PA_CONTEXT_TERMINATED:
+            if (pa_restart_attempts++ > 10) {
+                g_printerr("Failed to connect to PulseAudio after 10 attempts, quitting.\n");
+                sleep(30);
+                exit(1);
+            }
+
+            g_idle_add((GSourceFunc)pa_restart, NULL);
+            break;
+
+        default:;
+    };
 }
 
 pa_context* pa_get_context() {
