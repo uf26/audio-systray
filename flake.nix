@@ -22,6 +22,7 @@
           wrapProgram $out/bin/audio-systray \
             --prefix PATH : ${pkgs.pavucontrol}/bin \
             --prefix PATH : ${pkgs.playerctl}/bin \
+            --set GDK_PIXBUF_MODULE_FILE ${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache
         '';
       };
 
@@ -55,10 +56,6 @@
               Service = {
                 ExecStart = "${self.package}/bin/audio-systray"; 
                 Restart = "on-failure";
-
-                Environment = [
-                  "GDK_PIXBUF_MODULE_FILE=${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache"
-                ];
               };
             };
           };
