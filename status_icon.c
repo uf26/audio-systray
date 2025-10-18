@@ -6,6 +6,27 @@
 
 XAppStatusIcon* status_icon;
 
+string icon_path;
+
+const char* get_icon_path() {
+    return icon_path;
+}
+
+void read_icon_path() {
+    char* path = getenv("ICON_PATH");
+    if (path == NULL) {
+        memset(icon_path, 0, MAX_STR_LEN);
+        return;
+    }
+
+    strncpy(icon_path, path, MAX_STR_LEN - 2);
+
+    icon_path[MAX_STR_LEN - 1] = '\0';
+    if (icon_path[strlen(icon_path) - 1] != '/') {
+        icon_path[strlen(icon_path)] = '/';
+    }
+}
+    
 void update_icon() {
     string icon_name;
     pa_get_icon_name(icon_name);
@@ -18,6 +39,7 @@ void update_icon() {
 
 void status_icon_setup() {
     status_icon = xapp_status_icon_new_with_name("audio_systray");
+    read_icon_path();
     setup_events();
 }
 

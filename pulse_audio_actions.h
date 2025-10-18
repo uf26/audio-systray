@@ -4,7 +4,7 @@
 #include <pulse/pulseaudio.h>
 #include <stdbool.h>
 
-#define MAX_STR_LEN 100
+#define MAX_STR_LEN 256
 #define SCROLL_AMOUNT 5
 
 typedef char string[MAX_STR_LEN];

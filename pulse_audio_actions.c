@@ -204,22 +204,23 @@ pa_info_list* pa_get_sinks() {
 }
 
 void pa_get_icon_name(string icon) {
+    const char* base = get_icon_path();
+
     pa_info_list* default_sink = pa_get_default_sink();
     if (default_sink == NULL) {
-        strcpy(icon, "audio-volume-muted-symbolic");
-        return;
-    }
-
-    int volume = pa_cvolume_to_int(&default_sink->volume);
-
-    if (default_sink->mute || volume == 0) {
-        strcpy(icon, "audio-volume-muted-symbolic");
-    } else if (volume < 33) {
-        strcpy(icon, "audio-volume-low-symbolic");
-    } else if (volume < 66) {
-        strcpy(icon, "audio-volume-medium-symbolic");
+        snprintf(icon, MAX_STR_LEN, "%s%s", base, "muted.svg");
     } else {
-        strcpy(icon, "audio-volume-high-symbolic");
+        int volume = pa_cvolume_to_int(&default_sink->volume);
+
+        if (default_sink->mute || volume == 0) {
+            snprintf(icon, MAX_STR_LEN, "%s%s", base, "muted.svg");
+        } else if (volume < 33) {
+            snprintf(icon, MAX_STR_LEN, "%s%s", base, "low.svg");
+        } else if (volume < 66) {
+            snprintf(icon, MAX_STR_LEN, "%s%s", base, "medium.svg");
+        } else {
+            snprintf(icon, MAX_STR_LEN, "%s%s", base, "high.svg");
+        }
     }
 }
 
