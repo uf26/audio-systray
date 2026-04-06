@@ -5,17 +5,23 @@
 #include "notify.h"
 #include "sink_list.h"
 #include "status_icon.h"
+#include "utils.h"
 #include <math.h>
+
+#define PA_NO_NOTIFY_TIMEOUT_MS 0
 
 static pa_glib_mainloop* mainloop = NULL;
 static pa_context *context = NULL;
 static pa_mainloop_api *mainloop_api = NULL;
 static size_t pa_restart_attempts = 0;
+static struct timespec pa_created_at = {0};
 
 void pa_state_cb(pa_context* c, void* userdata);
 
 gboolean pa_restart(gpointer user_data) {
     g_debug("Attempting to reconnect to PulseAudio...\n");
+
+    clock_gettime(CLOCK_MONOTONIC, &pa_created_at);
 
     if (context) {
         pa_context_disconnect(context);
@@ -36,6 +42,8 @@ gboolean pa_restart(gpointer user_data) {
 }
 
 void pa_init() {
+    clock_gettime(CLOCK_MONOTONIC, &pa_created_at);
+
     mainloop = pa_glib_mainloop_new(NULL);
     mainloop_api = pa_glib_mainloop_get_api(mainloop);
     context = pa_context_new(mainloop_api, "audio_systray");
@@ -45,6 +53,8 @@ void pa_init() {
 }
 
 void pa_quit() {
+    pa_created_at.tv_sec = 0;
+
     pa_context_disconnect(context);
     pa_context_unref(context);
     pa_glib_mainloop_free(mainloop);
@@ -70,10 +80,10 @@ void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, voi
     
     int volume_percent = volume_to_percent(&info->volume);
 
-    if (notify)
+    if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
         notify_sink_change(volume_percent, info->is_muted);
 
-    status_icon_update_icon(volume_percent, info->is_muted);
+    status_icon_update_icon(volume_percent, info->is_muted, info->name->str);
 }
 
 void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *userdata) {
@@ -88,10 +98,10 @@ void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *use
     if (!default_sink)
         return;
 
-    if (notify)
-        notify_new_default_sink(default_sink->name->str);
+    // if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
+    //     notify_new_default_sink(default_sink->name->str);
 
-    status_icon_update_icon(volume_to_percent(&default_sink->volume), default_sink->is_muted);
+    status_icon_update_icon(volume_to_percent(&default_sink->volume), default_sink->is_muted, default_sink->name->str);
 }
 
 void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t, 

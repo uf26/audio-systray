@@ -2,6 +2,7 @@
 #include "pulse_actions.h"
 #include "sink_list.h"
 #include "pulse.h"
+#include "utils.h"
 
 static GtkMenu* menu = NULL;
 
@@ -16,20 +17,16 @@ void destroy_menu() {
 
 void force_item_length(GtkMenuItem* item, int width) {
     GtkWidget *label = gtk_bin_get_child(GTK_BIN(item));
+    if (!GTK_IS_LABEL(label)) return;
+
     const gchar* original_text = gtk_label_get_text(GTK_LABEL(label));
     
     gtk_widget_set_tooltip_text(label, original_text);
 
-    glong char_len = g_utf8_strlen(original_text, -1);
-    if (char_len < width)
-        return;
-
-    gchar *truncated = g_utf8_substring(original_text, 0, width - 3);
-    gchar *new_text = g_strdup_printf("%s...", truncated);
-
+    gchar *new_text = truncate_utf8_string(original_text, width);
+    
     gtk_label_set_text(GTK_LABEL(label), new_text);
 
-    g_free(truncated);
     g_free(new_text);
 }
 

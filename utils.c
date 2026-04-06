@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <time.h>
 
 static gchar* icon_cache[4] = {NULL, NULL, NULL, NULL};
 
@@ -37,4 +38,36 @@ void free_icon_cache() {
             icon_cache[i] = NULL;
         }
     }
+}
+
+gboolean check_timeout(struct timespec start, int timeout_ms) {
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+
+    long elapsed_ms = (now.tv_sec - start.tv_sec) * 1000 + 
+        (now.tv_nsec - start.tv_nsec) / 1000000;
+
+    if (elapsed_ms < timeout_ms) {
+        return FALSE; 
+    }
+
+    return TRUE;
+}
+
+gchar* truncate_utf8_string(const gchar* text, glong max_len) {
+    if (text == NULL) return NULL;
+
+    glong actual_len = g_utf8_strlen(text, -1);
+
+    if (actual_len <= max_len) {
+        return g_strdup(text);
+    }
+
+    glong truncate_at = (max_len > 3) ? (max_len - 3) : 0;
+
+    gchar *truncated = g_utf8_substring(text, 0, truncate_at);
+    gchar *result = g_strdup_printf("%s...", truncated);
+    
+    g_free(truncated);
+    return result;
 }

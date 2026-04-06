@@ -1,6 +1,6 @@
 #include "sink_list.h"
 #include <time.h>
-#include <math.h>
+#include "utils.h"
 
 #define SINK_INFO_INITAL_SLEEP_MS 500
 
@@ -43,17 +43,7 @@ gboolean sink_info_update(SinkInfo* info, gboolean is_muted, const pa_cvolume* v
     if (!changed)
         return FALSE; 
 
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-
-    long elapsed_ms = (now.tv_sec - info->created_at.tv_sec) * 1000 + 
-        (now.tv_nsec - info->created_at.tv_nsec) / 1000000;
-
-    if (elapsed_ms < SINK_INFO_INITAL_SLEEP_MS) {
-        return FALSE; 
-    }
-
-    return TRUE;
+    return check_timeout(info->created_at, SINK_INFO_INITAL_SLEEP_MS);
 }
 
 void sink_list_clear() {

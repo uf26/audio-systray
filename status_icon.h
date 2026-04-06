@@ -3,7 +3,7 @@
 
 #include <glib.h>
 
-void status_icon_update_icon(int volume_percent, gboolean is_muted);
+void status_icon_update_icon(int volume_percent, gboolean is_muted, const char* sink_name);
 void status_icon_setup();
 void status_icon_cleanup();
 

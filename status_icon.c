@@ -30,10 +30,13 @@ void handle_scroll(XAppStatusIcon* icon, int amount,
     pa_change_volume(-amount * 5);
 }
 
-void status_icon_update_icon(int volume_percent, gboolean is_muted) {
+void status_icon_update_icon(int volume_percent, gboolean is_muted,
+        const char* sink_name) {
     xapp_status_icon_set_icon_name(status_icon, get_volume_icon_name(volume_percent, is_muted));
 
-    char* tooltip = g_strdup_printf("%d%%%s", volume_percent, is_muted ? " [muted]" : "");
+    sink_name = truncate_utf8_string(sink_name, 60);
+    char* tooltip = g_strdup_printf("%s - %d%%%s", sink_name, volume_percent, is_muted ? " [muted]" : "");
+    g_free((char*)sink_name);
 
     xapp_status_icon_set_tooltip_text(status_icon, tooltip);
 
@@ -42,7 +45,7 @@ void status_icon_update_icon(int volume_percent, gboolean is_muted) {
 
 void status_icon_setup() {
     status_icon = xapp_status_icon_new_with_name("audio_systray");
-    status_icon_update_icon(0, TRUE);
+    status_icon_update_icon(0, TRUE, "No sink");
 
     g_signal_connect(status_icon, "button-release-event", 
             G_CALLBACK(handle_button_release), NULL);
