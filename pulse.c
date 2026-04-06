@@ -23,6 +23,8 @@ gboolean pa_restart(gpointer user_data) {
     }
 
     context = pa_context_new(mainloop_api, "audio_systray");
+
+    sink_list_clear();
     
     pa_context_set_state_callback(context, pa_state_cb, NULL);
     
