@@ -1,6 +1,20 @@
-#include <stdio.h>
+#include "pulse.h"
+#include "notify.h"
+#include "utils.h"
+#include "sink_list.h"
+#include "x11_keygrab.h"
+#include <gtk/gtk.h>
 
-int main() {
-    printf("Hello, World!\n");
-    return 0;
+int main(int argc, char** argv) {
+    gtk_init(&argc, &argv);
+    pa_init();
+    notify_setup();
+    x11_init();
+
+    gtk_main();
+
+    pa_quit();
+    notify_close();
+    free_icon_cache();
+    sink_list_clear();
 }

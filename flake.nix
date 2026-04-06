@@ -15,7 +15,8 @@
         version = "1.0";
         src = ./.;
         buildInputs = with pkgs; [
-          cmake pkg-config gtk3 xapp.dev pulseaudio libnotify xorg.libX11 makeWrapper
+          cmake pkg-config gtk3 xapp.dev pulseaudio libnotify libx11 makeWrapper
+          playerctl
         ];
 
         installPhase = ''
@@ -26,10 +27,9 @@
           cp $src/icons/* $out/share/icons/
 
           wrapProgram $out/bin/audio-systray \
-            --prefix PATH : ${pkgs.pavucontrol}/bin \
-            --prefix PATH : ${pkgs.playerctl}/bin \
             --set GDK_PIXBUF_MODULE_FILE ${pkgs.librsvg}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache \
-            --set ICON_PATH $out/share/icons
+            # --set ICON_PATH $out/share/icons \
+            # --set PAVUCONTROL_PATH ${pkgs.pavucontrol}/bin/pavucontrol
         '';
       };
 

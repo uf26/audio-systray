@@ -8,6 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(XAPP REQUIRED xapp)
+pkg_check_modules(PLAYERCTL REQUIRED playerctl)
 # --- END ADDITION ---
 
 file(GLOB SOURCES "*.c")
@@ -18,12 +19,14 @@ add_executable(audio-systray ${SOURCES})
 target_include_directories(audio-systray PRIVATE
     ${GTK3_INCLUDE_DIRS}
     ${XAPP_INCLUDE_DIRS} # Use pkg-config variable for XApp includes
+    ${PLAYERCTL_INCLUDE_DIRS}
 )
 
 # Link the GTK3, XApp, and PulseAudio libraries
 target_link_libraries(audio-systray PRIVATE
     ${GTK3_LIBRARIES}
     ${XAPP_LIBRARIES} 
+    ${PLAYERCTL_LIBRARIES}
     pulse
     pulse-mainloop-glib
     m
