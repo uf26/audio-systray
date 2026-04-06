@@ -4,6 +4,7 @@
 #include <gtk/gtk.h>
 #include "notify.h"
 #include "sink_list.h"
+#include "status_icon.h"
 #include <math.h>
 
 static pa_glib_mainloop* mainloop = NULL;
@@ -47,39 +48,48 @@ void pa_quit() {
     pa_glib_mainloop_free(mainloop);
 }
 
+int volume_to_percent(const pa_cvolume* volume) {
+    if (!volume || volume->channels == 0) return 0;
+    return round((float)pa_cvolume_avg(volume) * 100 / PA_VOLUME_NORM);
+}
+
 void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata) {
     if (eol > 0 || !i) return;
 
+    gboolean notify = FALSE;
     SinkInfo* info = sink_list_get_by_index(i->index);
-    if (!info) {
-        sink_list_add(i->description, i->name, i->index, 
-                i->mute, &i->volume);
-        return;
-    }
-
-    if (!sink_info_update(info, i->mute, &i->volume))
+    if (!info)
+        info = sink_list_add(i->description, i->name, i->index, i->mute, &i->volume);
+    else if (!(notify = sink_info_update(info, i->mute, &i->volume)))
         return;
 
     if (!sink_info_is_default(info))
         return;
+    
+    int volume_percent = volume_to_percent(&info->volume);
 
-    int volume_percent = round((float)pa_cvolume_avg(&i->volume) * 100 / PA_VOLUME_NORM);
-    g_debug("Sink '%s' updated: volume=%d%%, muted=%s\n", info->name->str, volume_percent, info->is_muted ? "yes" : "no");
-    notify_sink_change(volume_percent, info->is_muted);
+    if (notify)
+        notify_sink_change(volume_percent, info->is_muted);
+
+    status_icon_update_icon(volume_percent, info->is_muted);
 }
 
 void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *userdata) {
     if (!i) return;
 
-    if (!sink_list_update_default(i->default_sink_name))
+    gboolean has_default = sink_list_has_default();
+    gboolean notify = sink_list_update_default(i->default_sink_name);
+    if (!notify && has_default)
         return;
 
     SinkInfo* default_sink = sink_list_get_default();
     if (!default_sink)
         return;
 
-    g_debug("Default sink changed to '%s'\n", default_sink->name->str);
-    notify_new_default_sink(default_sink->name->str);
+    if (notify)
+        notify_new_default_sink(default_sink->name->str);
+
+    status_icon_update_icon(volume_to_percent(&default_sink->volume), default_sink->is_muted);
 }
 
 void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t, 

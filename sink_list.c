@@ -14,7 +14,7 @@ void sink_info_free(SinkInfo *info) {
     g_free(info);
 }
 
-void sink_list_add(const char* name, const char* id, uint32_t index,
+SinkInfo* sink_list_add(const char* name, const char* id, uint32_t index,
     gboolean is_muted, const pa_cvolume* volume) {
     SinkInfo* info = g_new0(SinkInfo, 1);
     info->name = g_string_new(name);
@@ -25,6 +25,8 @@ void sink_list_add(const char* name, const char* id, uint32_t index,
     clock_gettime(CLOCK_MONOTONIC, &info->created_at);
 
     sink_list = g_list_append(sink_list, info);
+
+    return info;
 }
 
 gboolean sink_info_update(SinkInfo* info, gboolean is_muted, const pa_cvolume* volume) {
@@ -138,4 +140,12 @@ SinkInfo* sink_list_get_default_next() {
         iter = iter->next;
     }
     return NULL;
+}
+
+gboolean sink_list_has_default() {
+    return default_sink_id != NULL;
+}
+
+GList* sink_list_get_all() {
+    return sink_list;
 }
