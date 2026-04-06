@@ -68,32 +68,21 @@ int volume_to_percent(const pa_cvolume* volume) {
 void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata) {
     if (eol > 0 || !i) return;
 
-    g_print("Received sink info: index=%u, name=%s, description=%s, mute=%d, volume=%d%%\n", 
-            i->index, i->name, i->description, i->mute, volume_to_percent(&i->volume));
-
-    gboolean notify = FALSE;
-    SinkInfo* info = sink_list_get_by_index(i->index);
+    gboolean notify, update_icon;
+    SinkInfo* info = sink_list_add_or_update(i->description, i->name,
+            i->index, i->mute, &i->volume, &notify, &update_icon);
     if (!info)
-        info = sink_list_add(i->description, i->name, i->index, i->mute, &i->volume);
-    else if (!(notify = sink_info_update(info, i->mute, &i->volume)))
         return;
 
-    if (!sink_info_is_default(info))
-        return;
-    
     int volume_percent = volume_to_percent(&info->volume);
-
+    if (update_icon)
+        status_icon_update_icon(volume_percent, info->is_muted, info->name->str);
     if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
-        notify_sink_change(volume_percent, info->is_muted);
-
-    g_print("update icon from sink info\n");
-    status_icon_update_icon(volume_percent, info->is_muted, info->name->str);
+            notify_sink_change(volume_percent, info->is_muted);
 }
 
 void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *userdata) {
     if (!i) return;
-
-    g_print("Received server info: default_sink=%s\n", i->default_sink_name);
 
     gboolean has_default = sink_list_has_default();
     gboolean notify = sink_list_update_default(i->default_sink_name);
@@ -107,7 +96,6 @@ void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *use
     // if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
     //     notify_new_default_sink(default_sink->name->str);
 
-    g_print("update icon from default sink change\n");
     status_icon_update_icon(volume_to_percent(&default_sink->volume), default_sink->is_muted, default_sink->name->str);
 }
 
@@ -117,7 +105,6 @@ void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
     int type = t & PA_SUBSCRIPTION_EVENT_TYPE_MASK;
 
     if (facility == PA_SUBSCRIPTION_EVENT_SINK) {
-        g_print("Received sink event: type=%d, index=%u\n", type, idx);
         if (type == PA_SUBSCRIPTION_EVENT_NEW || type == PA_SUBSCRIPTION_EVENT_CHANGE) {
             pa_operation_unref(pa_context_get_sink_info_by_index(c, idx, 
                     pa_sink_add_or_update_cb, NULL));
@@ -125,7 +112,6 @@ void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
             sink_list_remove_by_index(idx); 
         }
     } else if (facility == PA_SUBSCRIPTION_EVENT_SERVER) {
-        g_print("Received server event: type=%d\n", type);
         if (type == PA_SUBSCRIPTION_EVENT_CHANGE) {
             pa_operation_unref(pa_context_get_server_info(c, 
                     pa_default_sink_change_cb, NULL));
@@ -144,7 +130,6 @@ void pa_state_cb(pa_context* c, void* userdata) {
     switch (pa_context_get_state(c)) {
         case PA_CONTEXT_READY:
             pa_restart_attempts = 0;
-            g_print("################# Connected to PulseAudio server successfully.\n");
             pa_operation_unref(pa_context_get_sink_info_list(c, pa_sink_add_or_update_cb, NULL));
             pa_operation_unref(pa_context_get_server_info(c, pa_default_sink_change_cb, NULL));
 

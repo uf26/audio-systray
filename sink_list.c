@@ -29,7 +29,18 @@ SinkInfo* sink_list_add(const char* name, const char* id, uint32_t index,
     return info;
 }
 
-gboolean sink_info_update(SinkInfo* info, gboolean is_muted, const pa_cvolume* volume) {
+SinkInfo* sink_list_add_or_update(const char* name, const char* id, uint32_t index,
+        gboolean is_muted, const pa_cvolume* volume, gboolean* notify, gboolean* update_icon) {
+    *notify = FALSE;
+    *update_icon = FALSE;
+    
+    SinkInfo* info = sink_list_get_by_index(index);
+    if (!info) {
+        info = sink_list_add(name, id, index, is_muted, volume);
+        *update_icon = sink_info_is_default(info);
+        return info;
+    }
+
     gboolean changed = FALSE;
     if (info->is_muted != is_muted) {
         info->is_muted = is_muted;
@@ -40,10 +51,13 @@ gboolean sink_info_update(SinkInfo* info, gboolean is_muted, const pa_cvolume* v
         changed = TRUE;
     }
 
-    if (!changed)
-        return FALSE; 
+    if (!sink_info_is_default(info) || !changed)
+        return NULL;
 
-    return check_timeout(info->created_at, SINK_INFO_INITAL_SLEEP_MS);
+    *notify = check_timeout(info->created_at, SINK_INFO_INITAL_SLEEP_MS);
+    *update_icon = TRUE;
+
+    return info;
 }
 
 void sink_list_clear() {
