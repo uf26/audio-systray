@@ -68,6 +68,9 @@ int volume_to_percent(const pa_cvolume* volume) {
 void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata) {
     if (eol > 0 || !i) return;
 
+    g_print("Received sink info: index=%u, name=%s, description=%s, mute=%d, volume=%d%%\n", 
+            i->index, i->name, i->description, i->mute, volume_to_percent(&i->volume));
+
     gboolean notify = FALSE;
     SinkInfo* info = sink_list_get_by_index(i->index);
     if (!info)
@@ -83,12 +86,14 @@ void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, voi
     if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
         notify_sink_change(volume_percent, info->is_muted);
 
-    g_print("update icon from sink info: volume=%d%%, muted=%d, name=%s\n", volume_percent, info->is_muted, info->name->str);
+    g_print("update icon from sink info\n");
     status_icon_update_icon(volume_percent, info->is_muted, info->name->str);
 }
 
 void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *userdata) {
     if (!i) return;
+
+    g_print("Received server info: default_sink=%s\n", i->default_sink_name);
 
     gboolean has_default = sink_list_has_default();
     gboolean notify = sink_list_update_default(i->default_sink_name);
@@ -102,7 +107,7 @@ void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *use
     // if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
     //     notify_new_default_sink(default_sink->name->str);
 
-    g_print("update icon from default sink change: volume=%d%%, muted=%d, name=%s\n", volume_to_percent(&default_sink->volume), default_sink->is_muted, default_sink->name->str);
+    g_print("update icon from default sink change\n");
     status_icon_update_icon(volume_to_percent(&default_sink->volume), default_sink->is_muted, default_sink->name->str);
 }
 
