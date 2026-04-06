@@ -16,20 +16,21 @@ void destroy_menu() {
 
 void force_item_length(GtkMenuItem* item, int width) {
     GtkWidget *label = gtk_bin_get_child(GTK_BIN(item));
+    const gchar* original_text = gtk_label_get_text(GTK_LABEL(label));
+    
+    gtk_widget_set_tooltip_text(label, original_text);
 
-    char* text = (char*) gtk_label_get_text(GTK_LABEL(label));
-
-    gtk_widget_set_tooltip_text(label, text);
-
-    if (strlen(text) < width)
+    glong char_len = g_utf8_strlen(original_text, -1);
+    if (char_len < width)
         return;
 
-    text[width - 4] = '.';
-    text[width - 3] = '.';
-    text[width - 2] = '.';
-    text[width - 1] = '\0';
+    gchar *truncated = g_utf8_substring(original_text, 0, width - 3);
+    gchar *new_text = g_strdup_printf("%s...", truncated);
 
-    gtk_label_set_text(GTK_LABEL(label), text);
+    gtk_label_set_text(GTK_LABEL(label), new_text);
+
+    g_free(truncated);
+    g_free(new_text);
 }
 
 void handle_sink_select(GtkRadioMenuItem *item, gpointer user_data) {

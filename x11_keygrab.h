@@ -4,5 +4,6 @@
 #include <gtk/gtk.h>
 
 void x11_init();
+void x11_cleanup();
 
 #endif

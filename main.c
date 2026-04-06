@@ -22,4 +22,5 @@ int main(int argc, char** argv) {
     sink_list_clear();
     status_icon_cleanup();
     destroy_menu();
+    x11_cleanup();
 }
