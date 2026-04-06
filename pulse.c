@@ -83,6 +83,7 @@ void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, voi
     if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
         notify_sink_change(volume_percent, info->is_muted);
 
+    g_print("update icon from sink info: volume=%d%%, muted=%d, name=%s\n", volume_percent, info->is_muted, info->name->str);
     status_icon_update_icon(volume_percent, info->is_muted, info->name->str);
 }
 
@@ -101,6 +102,7 @@ void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *use
     // if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
     //     notify_new_default_sink(default_sink->name->str);
 
+    g_print("update icon from default sink change: volume=%d%%, muted=%d, name=%s\n", volume_to_percent(&default_sink->volume), default_sink->is_muted, default_sink->name->str);
     status_icon_update_icon(volume_to_percent(&default_sink->volume), default_sink->is_muted, default_sink->name->str);
 }
 
@@ -110,6 +112,7 @@ void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
     int type = t & PA_SUBSCRIPTION_EVENT_TYPE_MASK;
 
     if (facility == PA_SUBSCRIPTION_EVENT_SINK) {
+        g_print("Received sink event: type=%d, index=%u\n", type, idx);
         if (type == PA_SUBSCRIPTION_EVENT_NEW || type == PA_SUBSCRIPTION_EVENT_CHANGE) {
             pa_operation_unref(pa_context_get_sink_info_by_index(c, idx, 
                     pa_sink_add_or_update_cb, NULL));
@@ -117,6 +120,7 @@ void pa_subscribe_cb(pa_context *c, pa_subscription_event_type_t t,
             sink_list_remove_by_index(idx); 
         }
     } else if (facility == PA_SUBSCRIPTION_EVENT_SERVER) {
+        g_print("Received server event: type=%d\n", type);
         if (type == PA_SUBSCRIPTION_EVENT_CHANGE) {
             pa_operation_unref(pa_context_get_server_info(c, 
                     pa_default_sink_change_cb, NULL));
@@ -135,6 +139,7 @@ void pa_state_cb(pa_context* c, void* userdata) {
     switch (pa_context_get_state(c)) {
         case PA_CONTEXT_READY:
             pa_restart_attempts = 0;
+            g_print("################# Connected to PulseAudio server successfully.\n");
             pa_operation_unref(pa_context_get_sink_info_list(c, pa_sink_add_or_update_cb, NULL));
             pa_operation_unref(pa_context_get_server_info(c, pa_default_sink_change_cb, NULL));
 
