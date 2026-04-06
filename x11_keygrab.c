@@ -18,6 +18,7 @@ static const char *keysym_names[NUM_KEYS_TO_GRAB] = {
     "XF86AudioNext",
     "XF86AudioPrev"
 };
+static const unsigned int modifiers[] = { 0, Mod2Mask, LockMask, Mod2Mask | LockMask };
 
 GdkFilterReturn x11_event_filter(GdkXEvent* xevent, 
         GdkEvent* event, gpointer data) {
@@ -80,8 +81,9 @@ void x11_init() {
 
 
         gdk_x11_display_error_trap_push(gdkDisplay);
-        XGrabKey(dpy, key_code, 0, 
-                    root, True, GrabModeAsync, GrabModeAsync);
+        for (int m = 0; m < 4; m++) {
+            XGrabKey(dpy, key_code, modifiers[m], root, True, GrabModeAsync, GrabModeAsync);
+        }
 
         if (gdk_x11_display_error_trap_pop(gdkDisplay))
             g_printerr("Failed to grab %s\n", keysym_names[i]);
@@ -103,7 +105,9 @@ void x11_cleanup() {
         KeyCode key_code = XKeysymToKeycode(dpy, keysym);
         if (key_code == 0) continue;
 
-        XUngrabKey(dpy, key_code, 0, root);
+        for (int m = 0; m < 4; m++) {
+            XUngrabKey(dpy, key_code, modifiers[m], root);
+        }
     }
     gdk_window_remove_filter(gdkRoot, x11_event_filter, NULL);
 }
