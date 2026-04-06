@@ -78,7 +78,7 @@ void pa_sink_add_or_update_cb(pa_context *c, const pa_sink_info *i, int eol, voi
     if (update_icon)
         status_icon_update_icon(volume_percent, info->is_muted, info->name->str);
     if (notify && check_timeout(pa_created_at, PA_NO_NOTIFY_TIMEOUT_MS))
-            notify_sink_change(volume_percent, info->is_muted);
+        notify_sink_change(volume_percent, info->is_muted);
 }
 
 void pa_default_sink_change_cb(pa_context *c, const pa_server_info *i, void *userdata) {
