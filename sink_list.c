@@ -50,7 +50,7 @@ SinkInfo* sink_list_add_or_update(const char* name, const char* id, uint32_t ind
         pa_volume_t old_avg = pa_cvolume_avg(&info->volume);
         pa_volume_t new_avg = pa_cvolume_avg(volume);
         pa_volume_t five_percent = (PA_VOLUME_NORM * 5) / 100;
-        if (old_avg == 0 && new_avg > five_percent) {
+        if (!(old_avg == 0 && new_avg > five_percent)) {
             changed = TRUE;
         }
 
