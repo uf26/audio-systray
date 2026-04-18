@@ -1,9 +1,7 @@
 #include "sink_list.h"
 #include <time.h>
-#include "utils.h"
 #include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "utils.h"
 
 #define SINK_INFO_INITAL_SLEEP_MS 500
 
@@ -50,17 +48,10 @@ SinkInfo* sink_list_add_or_update(const char* name, const char* id, uint32_t ind
         changed = TRUE;
     }
     if (volume && !pa_cvolume_equal(&info->volume, volume)) {
-        pa_volume_t old_avg = pa_cvolume_avg(&info->volume);
-        pa_volume_t new_avg = pa_cvolume_avg(volume);
-        pa_volume_t five_percent = (PA_VOLUME_NORM * 5) / 100;
-        if (!(old_avg == 0 && new_avg > five_percent)) {
+        int volume_percent = round(pa_cvolume_avg(volume) * 100 / PA_VOLUME_NORM);
+        if (abs(volume_percent - info->last_notified_volume_percent) > 2) {
             changed = TRUE;
-            char text[100];
-            snprintf(text, sizeof(text), "echo \"Volume changed from %d%% to %d%%\" >> /tmp/sink_changes.log",
-                    (int)round((float)old_avg * 100 / PA_VOLUME_NORM),
-                    (int)round((float)new_avg * 100 / PA_VOLUME_NORM));
-
-            system(text);
+            info->last_notified_volume_percent = volume_percent;
         }
 
         info->volume = *volume;

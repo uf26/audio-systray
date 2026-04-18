@@ -11,6 +11,7 @@ typedef struct {
     GString* id;
     gboolean is_muted;
     pa_cvolume volume;
+    int last_notified_volume_percent;
     struct timespec created_at;
 } SinkInfo;
 
