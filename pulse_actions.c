@@ -1,6 +1,7 @@
 #include "pulse_actions.h"
 #include "pulse.h"
 #include "sink_list.h"
+#include "notify.h"
 
 void pa_change_volume(int step) {
     SinkInfo* default_sink = sink_list_get_default();
@@ -30,8 +31,10 @@ void pa_toggle_mute() {
     pa_update_sink(default_sink->index, &default_sink->volume, !default_sink->is_muted);
 }
 
-void pa_cycle_sink() {
+void pa_cycle_sink(bool notify) {
     pa_set_default_sink(sink_list_get_default_next()->id->str);
+    if (notify)
+        notify_new_default_sink(sink_list_get_default()->name->str);
 }
 
 void pa_open_pavucontrol() {

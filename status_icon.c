@@ -13,7 +13,7 @@ void handle_button_release(XAppStatusIcon* icon, int x, int y,
         guint button, guint time, int panel_position, gpointer user_data) {
     switch(button) {
         case 1:
-            pa_cycle_sink();
+            pa_cycle_sink(true);
             break;
         case 2:
             pa_toggle_mute();
