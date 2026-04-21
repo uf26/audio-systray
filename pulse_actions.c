@@ -32,9 +32,11 @@ void pa_toggle_mute() {
 }
 
 void pa_cycle_sink(bool notify) {
-    pa_set_default_sink(sink_list_get_default_next()->id->str);
+    SinkInfo* next_sink = sink_list_get_default_next();
+    pa_set_default_sink(next_sink->id->str);
+
     if (notify)
-        notify_new_default_sink(sink_list_get_default()->name->str);
+        notify_new_default_sink(next_sink->name->str);
 }
 
 void pa_open_pavucontrol() {
